@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sumarização de Texto</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    #summarizeForm {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #textInput {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #summary {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      min-height: 100px;
+    }
+
+    #summary p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Sumarização de Texto</h1>
+  <div id="summarizeForm">
+    <textarea id="textInput" rows="10" placeholder="Digite seu texto aqui..."></textarea><br><br>
+    <label for="summaryLevel">Nível de Resumo:</label>
+    <select id="summaryLevel">
+      <option value="high">Alta</option>
+      <option value="medium">Média</option>
+      <option value="low">Baixa</option>
+    </select><br><br>
+    <button type="button" onclick="summarizeText()">Sumarizar</button>
+    <div id="stats" style="margin-top: 10px;">
+      <p><strong>Caracteres antes do resumo:</strong> <span id="charCountBefore">0</span></p>
+      <p><strong>Caracteres depois do resumo:</strong> <span id="charCountAfter">0</span></p>
+      <p><strong>Porcentagem resumida:</strong> <span id="percentReduced">0%</span></p>
+    </div>
+  </div>
+  <div id="summary"></div>
+
+  <script>
+    function summarizeText() {
+      var text = document.getElementById("textInput").value;
+      var summaryLevel = document.getElementById("summaryLevel").value;
+
+      var ratio;
+      if (summaryLevel === "high") {
+        ratio = 0.1; // Alta taxa de resumo (10%)
+      } else if (summaryLevel === "medium") {
+        ratio = 0.3; // Média taxa de resumo (30%)
+      } else if (summaryLevel === "low") {
+        ratio = 0.5; // Baixa taxa de resumo (50%)
+      }
+
+      fetch('http://localhost:5000/summarize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: text, ratio: ratio })
+      })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("summary").innerHTML = '<p>' + data.summary + '</p>';
+          document.getElementById("charCountBefore").innerText = text.length;
+          document.getElementById("charCountAfter").innerText = data.summary.length;
+          var percentReduced = ((text.length - data.summary.length) / text.length * 100).toFixed(2);
+          document.getElementById("percentReduced").innerText = percentReduced + '%';
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+
+</html>
